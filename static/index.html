@@ -20,6 +20,44 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Hackathon Guided Story HUD -->
+    <div class="pitch-hud-container glass collapsed" id="pitch-hud">
+        <div class="hud-header">
+            <div class="hud-title">
+                <i class="fa-solid fa-chalkboard-user"></i>
+                <span>Judge Pitch HUD</span>
+            </div>
+            <button id="toggle-hud-btn" class="hud-toggle-btn"><i class="fa-solid fa-chevron-up"></i></button>
+        </div>
+        <div class="hud-body" id="hud-body" style="display: none;">
+            <p class="hud-intro">Welcome, Hackathon Judge! Use this guided script to tour our product's full capabilities in 90 seconds:</p>
+            <div class="hud-steps">
+                <button class="hud-step-btn active" id="hud-step-1">
+                    <span class="step-num">1</span>
+                    <span class="step-label">Auto-Plan Tokyo (Start)</span>
+                </button>
+                <button class="hud-step-btn" id="hud-step-2" disabled>
+                    <span class="step-num">2</span>
+                    <span class="step-label">Simulate Weather Shift</span>
+                </button>
+                <button class="hud-step-btn" id="hud-step-3" disabled>
+                    <span class="step-num">3</span>
+                    <span class="step-label">Play Voice Audio Tour</span>
+                </button>
+                <button class="hud-step-btn" id="hud-step-4" disabled>
+                    <span class="step-num">4</span>
+                    <span class="step-label">Trigger Activity Swap</span>
+                </button>
+            </div>
+            <div class="hud-script-box" id="hud-script-box">
+                <strong>Narrative Cue:</strong> Click "Auto-Plan Tokyo" to begin.
+            </div>
+            <div class="hud-footer">
+                <span>TSP Nearest Neighbor Route • Leaflet.js • Web Speech TTS</span>
+            </div>
+        </div>
+    </div>
+
     <div class="app-container">
         <!-- Sidebar Navigation / Planner Panel -->
         <aside class="sidebar glass">
@@ -27,107 +65,136 @@
                 <i class="fa-solid fa-compass-drafting logo-icon"></i>
                 <h2>WanderSync</h2>
             </div>
+
+            <!-- Mode Selector Tab Bar -->
+            <div class="planner-mode-selector">
+                <button type="button" class="mode-tab active" id="standard-mode-btn">
+                    <i class="fa-solid fa-sliders"></i> Manual Setup
+                </button>
+                <button type="button" class="mode-tab" id="ai-mode-btn">
+                    <i class="fa-solid fa-brain"></i> AI Agent
+                </button>
+            </div>
             
             <form id="planner-form" class="planner-form">
-                <div class="form-group" style="position: relative;">
-                    <label for="destination-input"><i class="fa-solid fa-map-pin"></i> Destination</label>
-                    <div class="search-input-wrapper">
-                        <input type="text" id="destination-input" placeholder="Type any city (e.g. Goa, Paris, Delhi)..." autocomplete="off" required>
-                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <!-- Standard Fields -->
+                <div id="standard-planner-fields">
+                    <div class="form-group" style="position: relative;">
+                        <label for="destination-input">Destination</label>
+                        <div class="search-input-wrapper">
+                            <input type="text" id="destination-input" placeholder="Type any city (e.g. Goa, Paris, Delhi)..." autocomplete="off" required>
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        </div>
+                        <div id="suggestions-popup" class="suggestions-popup glass" style="display: none;">
+                            <!-- dynamic auto-suggestions -->
+                        </div>
                     </div>
-                    <div id="suggestions-popup" class="suggestions-popup glass" style="display: none;">
-                        <!-- dynamic auto-suggestions -->
+
+                    <div class="form-group">
+                        <label>Duration (Days)</label>
+                        <div class="range-container">
+                            <input type="range" id="days" min="1" max="5" value="3" class="slider">
+                            <span id="days-val" class="badge">3 Days</span>
+                        </div>
                     </div>
+
+                    <div class="form-group">
+                        <label>Budget Tier</label>
+                        <div class="select-btn-group">
+                            <label class="btn-group-label">
+                                <input type="radio" name="budget" value="budget">
+                                <span class="btn-group-text">Budget</span>
+                            </label>
+                            <label class="btn-group-label">
+                                <input type="radio" name="budget" value="mid_range" checked>
+                                <span class="btn-group-text">Mid-Range</span>
+                            </label>
+                            <label class="btn-group-label">
+                                <input type="radio" name="budget" value="luxury">
+                                <span class="btn-group-text">Luxury</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Travel Pace</label>
+                        <div class="select-btn-group">
+                            <label class="btn-group-label">
+                                <input type="radio" name="pace" value="relaxed">
+                                <span class="btn-group-text">Relaxed <small>(1/day)</small></span>
+                            </label>
+                            <label class="btn-group-label">
+                                <input type="radio" name="pace" value="active" checked>
+                                <span class="btn-group-text">Active <small>(2/day)</small></span>
+                            </label>
+                            <label class="btn-group-label">
+                                <input type="radio" name="pace" value="packed">
+                                <span class="btn-group-text">Packed <small>(3/day)</small></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Travel Styles</label>
+                        <div class="checkbox-grid">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="preferences" value="culture" checked>
+                                <span class="checkbox-text">Culture</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="preferences" value="nature" checked>
+                                <span class="checkbox-text">Nature</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="preferences" value="adventure">
+                                <span class="checkbox-text">Adventure</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="preferences" value="food" checked>
+                                <span class="checkbox-text">Food</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="preferences" value="relaxation">
+                                <span class="checkbox-text">Relaxation</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="generate-btn" class="submit-btn">
+                        <span>Generate Itinerary</span>
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </button>
                 </div>
 
-                <div class="form-group">
-                    <label><i class="fa-solid fa-calendar-days"></i> Duration (Days)</label>
-                    <div class="range-container">
-                        <input type="range" id="days" min="1" max="5" value="3" class="slider">
-                        <span id="days-val" class="badge">3 Days</span>
+                <!-- AI Prompt Panel -->
+                <div id="ai-planner-fields" style="display: none;">
+                    <div class="form-group">
+                        <label for="ai-prompt-input">Dream Trip Planner</label>
+                        <textarea id="ai-prompt-input" placeholder="e.g. I want to visit Tokyo for 3 days. I love food and adventure, with a mid_range budget."></textarea>
+                    </div>
+                    
+                    <button type="button" id="ai-plan-btn" class="submit-btn">
+                        <span>AI Plan Itinerary</span>
+                        <i class="fa-solid fa-brain"></i>
+                    </button>
+
+                    <div class="console-box" id="terminal-box" style="display: none;">
+                        <div class="console-header">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                            <span class="console-title">agent_terminal.log</span>
+                        </div>
+                        <div class="console-body" id="terminal-content">
+                            <!-- Typewriter logs inserted here -->
+                        </div>
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label><i class="fa-solid fa-wallet"></i> Budget Tier</label>
-                    <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="budget" value="budget">
-                            <div class="radio-btn">
-                                <i class="fa-solid fa-sack-dollar"></i>
-                                <span>Budget</span>
-                            </div>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="budget" value="mid_range" checked>
-                            <div class="radio-btn">
-                                <i class="fa-solid fa-coins"></i>
-                                <span>Mid-Range</span>
-                            </div>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="budget" value="luxury">
-                            <div class="radio-btn">
-                                <i class="fa-solid fa-gem"></i>
-                                <span>Luxury</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label><i class="fa-solid fa-gauge-high"></i> Travel Pace</label>
-                    <div class="select-btn-group">
-                        <label class="btn-group-label">
-                            <input type="radio" name="pace" value="relaxed">
-                            <span class="btn-group-text">Relaxed <small>(1/day)</small></span>
-                        </label>
-                        <label class="btn-group-label">
-                            <input type="radio" name="pace" value="active" checked>
-                            <span class="btn-group-text">Active <small>(2/day)</small></span>
-                        </label>
-                        <label class="btn-group-label">
-                            <input type="radio" name="pace" value="packed">
-                            <span class="btn-group-text">Packed <small>(3/day)</small></span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label><i class="fa-solid fa-heart"></i> Travel Style & Preferences</label>
-                    <div class="checkbox-grid">
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="preferences" value="culture" checked>
-                            <span class="checkbox-text"><i class="fa-solid fa-masks-theater"></i> Culture</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="preferences" value="nature" checked>
-                            <span class="checkbox-text"><i class="fa-solid fa-tree"></i> Nature</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="preferences" value="adventure">
-                            <span class="checkbox-text"><i class="fa-solid fa-person-hiking"></i> Adventure</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="preferences" value="food" checked>
-                            <span class="checkbox-text"><i class="fa-solid fa-utensils"></i> Food</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="preferences" value="relaxation">
-                            <span class="checkbox-text"><i class="fa-solid fa-spa"></i> Relaxation</span>
-                        </label>
-                    </div>
-                </div>
-
-                <button type="submit" id="generate-btn" class="submit-btn">
-                    <span>Generate Itinerary</span>
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                </button>
             </form>
             
             <div class="sidebar-footer">
-                <p>Hackathon Warm-up Project</p>
-                <small>Built with FastAPI & Vanilla JS</small>
+                <p>WanderSync Engine v2</p>
+                <small>Hackathon Main Challenge</small>
             </div>
         </aside>
 
@@ -172,6 +239,13 @@
                             <div class="stat-info">
                                 <h3>Days Count</h3>
                                 <p id="stat-days">0 Days</p>
+                            </div>
+                        </div>
+                        <div class="stat-card glass">
+                            <div class="stat-icon bg-eco"><i class="fa-solid fa-leaf"></i></div>
+                            <div class="stat-info">
+                                <h3>CO₂ Saved</h3>
+                                <p id="stat-co2">0.0 kg</p>
                             </div>
                         </div>
                     </div>
@@ -250,6 +324,25 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Activity Swap Modal -->
+    <div id="swap-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-arrows-rotate"></i> Swap Travel Activity</h3>
+                <button id="close-swap-modal" class="close-btn">&times;</button>
+            </div>
+            <p class="modal-subtitle">Swap this time slot with an alternative sightseeing spot, restaurant, or activity. Route distance and budget details will automatically optimize.</p>
+            <div class="modal-grid" id="swap-options-list">
+                <!-- dynamic swaps will go here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Weather overlay effects -->
+    <div id="weather-effect-overlay">
+        <canvas id="weather-canvas"></canvas>
     </div>
 
     <!-- Leaflet JS -->

@@ -26,11 +26,50 @@ def haversine_distance(coord1: List[float], coord2: List[float]) -> float:
     
     return R * c
 
+OFFLINE_CITIES = {
+    "london": {"name": "London", "country": "United Kingdom", "coords": [51.5074, -0.1278]},
+    "sydney": {"name": "Sydney", "country": "Australia", "coords": [-33.8688, 151.2093]},
+    "cairo": {"name": "Cairo", "country": "Egypt", "coords": [30.0444, 31.2357]},
+    "mumbai": {"name": "Mumbai", "country": "India", "coords": [19.0760, 72.8777]},
+    "cape town": {"name": "Cape Town", "country": "South Africa", "coords": [-33.9249, 18.4241]},
+    "rio de janeiro": {"name": "Rio de Janeiro", "country": "Brazil", "coords": [-22.9068, -43.1729]},
+    "dubai": {"name": "Dubai", "country": "United Arab Emirates", "coords": [25.2048, 55.2708]},
+    "tokyo": {"name": "Tokyo", "country": "Japan", "coords": [35.6762, 139.6503]},
+    "paris": {"name": "Paris", "country": "France", "coords": [48.8566, 2.3522]},
+    "new york": {"name": "New York", "country": "United States", "coords": [40.7128, -74.0060]},
+    "rome": {"name": "Rome", "country": "Italy", "coords": [41.9028, 12.4964]},
+    "delhi": {"name": "Delhi", "country": "India", "coords": [28.6139, 77.2090]},
+    "goa": {"name": "Goa", "country": "India", "coords": [15.4909, 73.8278]}
+}
+
 def geocode_city(city_name: str) -> Optional[Dict[str, Any]]:
     """
-    Geocodes a city name using OpenStreetMap's Nominatim API.
-    Returns a dict with 'name', 'country', 'coords' (lat, lng), or None if not found.
+    Geocodes a city name, using a fast local offline dictionary fallback
+    and falling back to OpenStreetMap's Nominatim API if not found.
     """
+    clean_name = city_name.strip().lower()
+    if not clean_name:
+        return None
+        
+    # 1. Check exact match in offline dictionary
+    if clean_name in OFFLINE_CITIES:
+        data = OFFLINE_CITIES[clean_name]
+        return {
+            "name": data["name"],
+            "country": data["country"],
+            "coords": data["coords"]
+        }
+        
+    # 2. Check partial matches (e.g., 'london, uk' -> 'london')
+    for key, data in OFFLINE_CITIES.items():
+        if key in clean_name or clean_name in key:
+            return {
+                "name": data["name"],
+                "country": data["country"],
+                "coords": data["coords"]
+            }
+            
+    # 3. Fallback to Nominatim geocoder
     try:
         quoted_city = urllib.parse.quote(city_name)
         url = f"https://nominatim.openstreetmap.org/search?q={quoted_city}&format=json&limit=1"
@@ -395,5 +434,6 @@ def plan_trip(
         "pace": pace,
         "budget_tier": budget_tier,
         "total_cost": round(total_cost, 2),
-        "itinerary": itinerary
+        "itinerary": itinerary,
+        "all_activities": all_activities
     }
