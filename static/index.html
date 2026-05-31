@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WanderSync | Dynamic Travel Planning & Experience Engine</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation / Planner Panel -->
+        <aside class="sidebar glass">
+            <div class="logo-area">
+                <i class="fa-solid fa-compass-drafting logo-icon"></i>
+                <h2>WanderSync</h2>
+            </div>
+            
+            <form id="planner-form" class="planner-form">
+                <div class="form-group" style="position: relative;">
+                    <label for="destination-input"><i class="fa-solid fa-map-pin"></i> Destination</label>
+                    <div class="search-input-wrapper">
+                        <input type="text" id="destination-input" placeholder="Type any city (e.g. Goa, Paris, Delhi)..." autocomplete="off" required>
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    </div>
+                    <div id="suggestions-popup" class="suggestions-popup glass" style="display: none;">
+                        <!-- dynamic auto-suggestions -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-calendar-days"></i> Duration (Days)</label>
+                    <div class="range-container">
+                        <input type="range" id="days" min="1" max="5" value="3" class="slider">
+                        <span id="days-val" class="badge">3 Days</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-wallet"></i> Budget Tier</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="budget" value="budget">
+                            <div class="radio-btn">
+                                <i class="fa-solid fa-sack-dollar"></i>
+                                <span>Budget</span>
+                            </div>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="budget" value="mid_range" checked>
+                            <div class="radio-btn">
+                                <i class="fa-solid fa-coins"></i>
+                                <span>Mid-Range</span>
+                            </div>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="budget" value="luxury">
+                            <div class="radio-btn">
+                                <i class="fa-solid fa-gem"></i>
+                                <span>Luxury</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-gauge-high"></i> Travel Pace</label>
+                    <div class="select-btn-group">
+                        <label class="btn-group-label">
+                            <input type="radio" name="pace" value="relaxed">
+                            <span class="btn-group-text">Relaxed <small>(1/day)</small></span>
+                        </label>
+                        <label class="btn-group-label">
+                            <input type="radio" name="pace" value="active" checked>
+                            <span class="btn-group-text">Active <small>(2/day)</small></span>
+                        </label>
+                        <label class="btn-group-label">
+                            <input type="radio" name="pace" value="packed">
+                            <span class="btn-group-text">Packed <small>(3/day)</small></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-heart"></i> Travel Style & Preferences</label>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="preferences" value="culture" checked>
+                            <span class="checkbox-text"><i class="fa-solid fa-masks-theater"></i> Culture</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="preferences" value="nature" checked>
+                            <span class="checkbox-text"><i class="fa-solid fa-tree"></i> Nature</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="preferences" value="adventure">
+                            <span class="checkbox-text"><i class="fa-solid fa-person-hiking"></i> Adventure</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="preferences" value="food" checked>
+                            <span class="checkbox-text"><i class="fa-solid fa-utensils"></i> Food</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="preferences" value="relaxation">
+                            <span class="checkbox-text"><i class="fa-solid fa-spa"></i> Relaxation</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" id="generate-btn" class="submit-btn">
+                    <span>Generate Itinerary</span>
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </button>
+            </form>
+            
+            <div class="sidebar-footer">
+                <p>Hackathon Warm-up Project</p>
+                <small>Built with FastAPI & Vanilla JS</small>
+            </div>
+        </aside>
+
+        <!-- Main Content Dashboard -->
+        <main class="dashboard">
+            <!-- Header Notification Panel -->
+            <header class="top-nav glass">
+                <div class="header-left">
+                    <h1 id="trip-header-title">Plan Your Next Adventure</h1>
+                    <p id="trip-header-desc" class="text-muted">Select preferences on the left sidebar to generate a custom itinerary.</p>
+                </div>
+                
+                <div class="notifications-panel" id="notifications">
+                    <div class="notification-empty">
+                        <i class="fa-regular fa-bell"></i>
+                        <span>No disruption alerts</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-grid">
+                <!-- Left: Itinerary Timeline & Details -->
+                <div class="left-panel">
+                    <!-- Statistics Panel -->
+                    <div class="stats-row" style="display: none;" id="stats-panel">
+                        <div class="stat-card glass">
+                            <div class="stat-icon bg-indigo"><i class="fa-solid fa-tag"></i></div>
+                            <div class="stat-info">
+                                <h3>Total Cost</h3>
+                                <p id="stat-cost">$0.00</p>
+                            </div>
+                        </div>
+                        <div class="stat-card glass">
+                            <div class="stat-icon bg-teal"><i class="fa-solid fa-route"></i></div>
+                            <div class="stat-info">
+                                <h3>Pace</h3>
+                                <p id="stat-pace">Active</p>
+                            </div>
+                        </div>
+                        <div class="stat-card glass">
+                            <div class="stat-icon bg-coral"><i class="fa-solid fa-cloud-sun"></i></div>
+                            <div class="stat-info">
+                                <h3>Days Count</h3>
+                                <p id="stat-days">0 Days</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Day tabs selector -->
+                    <div class="tabs-container glass" style="display: none;" id="tabs-panel">
+                        <div class="tabs-scroll" id="day-tabs">
+                            <!-- Tabs dynamically inserted here -->
+                        </div>
+                    </div>
+
+                    <!-- Daily Itinerary Timeline Card -->
+                    <div class="timeline-card glass" id="itinerary-panel">
+                        <div class="placeholder-itinerary">
+                            <i class="fa-solid fa-umbrella-beach placeholder-icon"></i>
+                            <h3>Your itinerary awaits</h3>
+                            <p>Choose your constraints and click "Generate Itinerary" to compute your optimal travel plan, sequence activities, and compute expenses.</p>
+                        </div>
+                        <!-- Itinerary timeline entries will go here -->
+                        <div class="timeline-content" id="itinerary-content" style="display: none;">
+                            <div class="day-weather-header">
+                                <div class="weather-title">
+                                    <span id="current-day-label" class="day-label">Day 1</span>
+                                    <span id="current-day-weather" class="weather-badge sunny">
+                                        <i class="fa-solid fa-sun"></i> Sunny
+                                    </span>
+                                </div>
+                                <div class="weather-simulator">
+                                    <span>Simulate Change:</span>
+                                    <button class="sim-btn rain" id="sim-rain-btn" title="Simulate adverse weather (e.g. rain) to see the engine re-route outdoor activities to indoor fallbacks in real-time.">
+                                        <i class="fa-solid fa-cloud-showers-heavy"></i> Rain
+                                    </button>
+                                    <button class="sim-btn sun" id="sim-sun-btn" title="Simulate nice sunny weather to restore outdoor hiking/sightseeing.">
+                                        <i class="fa-solid fa-sun"></i> Sun
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="activities-timeline" id="activities-list">
+                                <!-- Dynamically loaded from Javascript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Map Visualization & Analytics -->
+                <div class="right-panel">
+                    <!-- Interactive Map -->
+                    <div class="map-card glass">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-earth-americas"></i> Route & Activity Map</h3>
+                            <span class="badge map-status" id="map-status-badge">Centered</span>
+                        </div>
+                        <div id="map-container" class="map-wrapper">
+                            <!-- Leaflet container -->
+                        </div>
+                    </div>
+
+                    <!-- Expense Chart Analysis -->
+                    <div class="chart-card glass" id="chart-panel" style="display: none;">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-chart-pie"></i> Budget & Expense Breakdown</h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="budget-chart"></canvas>
+                        </div>
+                        <div class="budget-progress-container">
+                            <div class="progress-info">
+                                <span>Budget Limit Progress</span>
+                                <span id="budget-limit-text">$0 / $300</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="budget-progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- App Script -->
+    <script src="app.js"></script>
+</body>
+</html>
