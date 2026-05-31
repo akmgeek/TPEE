@@ -15,7 +15,7 @@ WanderSync is an interactive, high-fidelity single-page web application that ser
 5. **Interactive Mapping & Analytics**:
    - Plots markers, chronological steps, and lines using **Leaflet.js**.
    - Integrates **Chart.js** doughnut charts showing cost category distributions and progress bars tracking budget limits.
-6. **Premium Glassmorphic Design**: Curated dark theme using CSS backdrop filters, glowing borders, custom sliders, and CSS-inverted dark map tiles.
+6. **Premium Light Glassmorphic Design**: Sleek, professional light-mode SaaS theme featuring high-contrast slate typography, border-based compact activity cards, soft-tint icons, and clear CartoDB Positron maps.
 
 ---
 
